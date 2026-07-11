@@ -1,13 +1,12 @@
 {
-  "name": "cs453-example-04b-api-client",
+  "name": "cs553-midterm",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "CS 453/553 example: basic browser API client using fetch.",
+  "description": "CS 553 midterm course task tracker",
   "scripts": {
-    "api": "node server/server.js",
-    "client": "http-server client -p 5173 -c-1",
-    "dev:api": "node --watch server/server.js"
+    "server": "node src/server.js",
+    "client": "node src/client.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

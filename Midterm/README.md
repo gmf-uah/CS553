@@ -1,3 +1,39 @@
+# Midterm
+
+`npm install`
+
+curl usage
+
+`GET` all tasks
+```bash
+curl http://localhost:3000/tasks
+```
+
+`GET` a specific task
+```bash
+curl http://localhost:3000/tasks/1
+```
+
+`POST` new task
+```bash
+curl -X POST http://localhost:3000/tasks -H "Content-Type: application/json" -d '{"title":"Homework 4","course":"MA 799","completed":true}'
+```
+
+`PUT` to replace an existing task
+```bash
+curl -X PUT http://localhost:3000/tasks/1 -H "Content-Type: application/json" -d '{"title":"Class dismissed","course":"CS 1000","completed":true}'
+```
+
+`PATCH` to update some fields of an existing task
+```bash
+curl -X PATCH http://localhost:3000/tasks/1 -H "Content-Type: application/json" -d '{"title":12, "course":"CS 788", "garbage":"nothing"}'
+```
+
+`DELETE` an existing task
+```bash
+curl -X DELETE http://localhost:3000/tasks/1
+```
+
 # Example 04b — Basic API Client
 
 This example shows a very small browser client that calls a REST API using

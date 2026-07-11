@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
-  title: Lab 3 Item API
+  title: Course Task Tracker
   version: 1.0.0
-  description: Create, retrieve, update, and delete items. Also check server health.
+  description: Create, retrieve, update, replace, and delete tasks. Also check server health.
 
 servers:
   - url: http://localhost:3000
@@ -22,94 +22,115 @@ paths:
                   status:
                     type: string
                     example: ok
-  /items:
-    get: # mostly taken from example 3's openapi.yaml file
-      summary: List all items
+  /tasks:
+    get:
+      summary: List all tasks
       responses:
         "200":
-          description: Items array retrieved
+          description: Tasks array retrieved
           content:
             application/json:
               schema:
                 type: array
                 properties:
-                  items: # items is the CHOICE of name here
+                  tasks:
                     type: array
-                    items: # items here is a fixed keyword in the OpenAPI spec
-                      # therefore, the naming collision is coincidental
-                      $ref: "#/components/schemas/Item"
+                    items:
+                      $ref: "#/components/schemas/Task"
                 required:
-                  - items
+                  - tasks
               example:
-                items:
+                tasks:
                   - id: 1
-                    name: keyboard
+                    title: Watch Week 3 lecture
+                    course: CS453
+                    completed: true
                   - id: 2
-                    name: mouse
-                  - id: 3
-                    name: monitor
+                    title: Complete midterm
+                    course: CS553
+                    completed: false
     post:
-      summary: Create new item
+      summary: Create new task
       requestBody:
         required: true
         content:
           application/json:
-            schema: # almost an Item, but without the id field.
-              $ref: "#/components/schemas/ItemInput"
+            schema: # almost a Task, but without the id field.
+              $ref: "#/components/schemas/TaskInput"
       responses:
         "201":
-          description: Respond with new item
+          description: Respond with new task
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Item"
+                $ref: "#/components/schemas/Task"
         "400":
           $ref: "#/components/responses/BadRequest"
   
-  /items/{id}:
+  /tasks/{id}:
     get:
-      summary: Get item by ID
+      summary: Get task by ID
       responses:
         "200":
-          description: Item got # achievement get
+          description: Task retrieved
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Item"
+                $ref: "#/components/schemas/Task"
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
           $ref: "#/components/responses/NotFound"
     put:
-      summary: Modify item
+      summary: Replace task
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Item"
+              $ref: "#/components/schemas/TaskInput" # The id is in the URI, not the request body
       responses:
         "200":
-          description: Item modified
+          description: Task replaced
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Item"
+                $ref: "#/components/schemas/Task"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      summary: Update task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskUpdate"
+      responses:
+        "200":
+          description: Task updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
           $ref: "#/components/responses/NotFound"
     delete:
-      summary: Delete an item
-      parameters: # why do we use 'parameters' for delete rather than 'requestBody' like for post?
-        - name: id
-          in: path # unsure what this is for
-          required: true # what would happen if this was false?
+      summary: Delete a task
+      parameters:
+        - name: id # parameter name is 'id'
+          in: path # the id parameter is in the URI like '/tasks/{id}'
+          # as opposed to '/tasks?id={id}'
+          required: true
           schema:
             type: integer
       responses:
         "204":
-          description: Item deleted
+          description: Task deleted
         "404":
           $ref: "#/components/responses/NotFound"
 
@@ -125,44 +146,66 @@ components:
             error: Invalid JSON
     
     NotFound:
-      description: Item not found
+      description: Task not found
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
           example:
-            message: Item not found
+            message: Task not found
 
   schemas:
-    Item:
+    Task:
       type: object
       properties:
         id:
           type: integer
           example: 1
-        name:
+        title:
           type: string
-          example: keyboard
-        quantity:
-          type: integer
-          example: 14
+          example: Watch Week 3 lecture
+        course:
+          type: string
+          example: CS453
+        completed:
+          type: boolean
+          example: false
       required:
         - id
-        - name
-        - quantity
+        - title
+        - course
+        - completed
 
-    ItemInput:
+    TaskInput: # not sure how to create this without copy-pasting Task's schema
       type: object
       properties:
-        name:
+        title:
           type: string
-          example: keyboard
-        quantity:
-          type: integer
-          example: 14
+          example: Watch Week 3 lecture
+        course:
+          type: string
+          example: CS453
+        completed:
+          type: boolean
+          example: false
       required:
-        - name
-        - quantity
+        - title
+        - course
+        - completed
+
+    TaskUpdate: # TaskInput but less strict; no required fields.
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        course:
+          type: string
+        completed:
+          type: boolean
+      # required: # only an id? --> No, because id is provided in URI rather than json body
+      #   - id
     
     ErrorResponse:
       type: object
