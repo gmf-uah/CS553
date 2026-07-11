@@ -105,8 +105,10 @@ Inaccurate API documentation, like an OpenAPI spec out of sync with its implemen
 
 Because OpenAPI specifications are relatively human-readable (like JSON or HTML), one advantage they provide is the ability for a wider audience to provide feedback, rather than just a few specialized engineers. Additionally, as with all markup languages, they are reducible to machine code and so can also be easily tested by that aforementioned wider audience through an API view like SwaggerUI.
 
-~~An OpenAPI spec may provide an advantage that isn't obvious to the client developer, but is clear during the process of developing the API. If the API accepts a weird range of parameters, like a certain parameter~~
+While an OpenAPI might help keep a team of developers on the same page regarding what functionality is to be implemented, it can slow down a solo developer from implementing what he or she already knows to be the API. However, for a client developer who is learning the API as an external observer, it is vital that the OpenAPI spec matches its actual behavior.
 
-Explain the advantages and disadvantages of designing the OpenAPI specification before writing the Express code.
+- If the implementation drifts from its documentation, an API must be tediously tested to determine the degree of this drift.
 
-Your answer should discuss team communication, testing, client development, and the risk of implementation drift.
+- Having documentation is about *reducing* the workload on client & other developers, but any level of drift can have the opposite effect.
+
+However, a disadvantage of writing the spec before the code is that it's *just words* until the code is written, and so it cannot be tested. An ambitious set of API endpoints, perhaps with many of them built on top of earlier concepts, may prove unoptimized or difficult to implement. Shortcut approaches are often found while writing code, and so these can be reflected in updated documentation - but this approach means writing code before the spec.

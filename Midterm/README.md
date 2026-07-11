@@ -10,7 +10,7 @@
 
 ## curl (optional)
 
-Alongside this automated client script, the server API can be interacted with via the following curl commands.
+Alongside the automated client script, the server API can be interacted with via the following curl commands.
 
 `GET` health
 ```bash
