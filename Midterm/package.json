@@ -1,0 +1,19 @@
+{
+  "name": "cs453-example-04b-api-client",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "CS 453/553 example: basic browser API client using fetch.",
+  "scripts": {
+    "api": "node server/server.js",
+    "client": "http-server client -p 5173 -c-1",
+    "dev:api": "node --watch server/server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

@@ -1,0 +1,174 @@
+openapi: 3.0.3
+info:
+  title: Lab 3 Item API
+  version: 1.0.0
+  description: Create, retrieve, update, and delete items. Also check server health.
+
+servers:
+  - url: http://localhost:3000
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: Server is running
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+  /items:
+    get: # mostly taken from example 3's openapi.yaml file
+      summary: List all items
+      responses:
+        "200":
+          description: Items array retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                properties:
+                  items: # items is the CHOICE of name here
+                    type: array
+                    items: # items here is a fixed keyword in the OpenAPI spec
+                      # therefore, the naming collision is coincidental
+                      $ref: "#/components/schemas/Item"
+                required:
+                  - items
+              example:
+                items:
+                  - id: 1
+                    name: keyboard
+                  - id: 2
+                    name: mouse
+                  - id: 3
+                    name: monitor
+    post:
+      summary: Create new item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: # almost an Item, but without the id field.
+              $ref: "#/components/schemas/ItemInput"
+      responses:
+        "201":
+          description: Respond with new item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  
+  /items/{id}:
+    get:
+      summary: Get item by ID
+      responses:
+        "200":
+          description: Item got # achievement get
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      summary: Modify item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Item"
+      responses:
+        "200":
+          description: Item modified
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      summary: Delete an item
+      parameters: # why do we use 'parameters' for delete rather than 'requestBody' like for post?
+        - name: id
+          in: path # unsure what this is for
+          required: true # what would happen if this was false?
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Item deleted
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+components:
+  responses:
+    BadRequest:
+      description: Invalid JSON or bad request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: Invalid JSON
+    
+    NotFound:
+      description: Item not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: Item not found
+
+  schemas:
+    Item:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: keyboard
+        quantity:
+          type: integer
+          example: 14
+      required:
+        - id
+        - name
+        - quantity
+
+    ItemInput:
+      type: object
+      properties:
+        name:
+          type: string
+          example: keyboard
+        quantity:
+          type: integer
+          example: 14
+      required:
+        - name
+        - quantity
+    
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Invalid input
+      required:
+        - error
