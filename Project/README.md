@@ -78,7 +78,7 @@ curl http://localhost:3000/health
 GET `/db-health`
 
 ```bash
-curl http://localhost:3000/health
+curl http://localhost:3000/db-health
 ```
 
 - Fails when the database fails. This is true for all routes on this server other than `GET /health`.
