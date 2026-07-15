@@ -61,7 +61,7 @@ export function validateTask(validationMode: TaskValidationMode) {
         if (!validFields) {
             const errorMessage = // didnt feel like doing the whole "return success: bool, error: Error | null" idiom
                 validationMode === TaskValidationMode.CREATE_MINIMUM
-                    ? "Invalid item schema. Required fields must be present and all provided fields must have correct data types"
+                    ? "Invalid task schema. Required fields must be present and all provided fields must have correct data types"
                     : "At least one update field must be provided and all update fields must have correct data types";
 
             return res.status(400).json({ error: errorMessage });
