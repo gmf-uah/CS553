@@ -30,6 +30,7 @@ app.get("/db-health", async (_req, res) => {
 	}
 });
 
+// 4. 'Implement GET /tasks'
 app.get("/tasks", async (_req, res) => {
 	try {
 		const result = await pool.query(
@@ -53,6 +54,9 @@ app.get("/tasks", async (_req, res) => {
 	}
 });
 
+// Canvas Checkpoint 1 Step 1 'Create the basic Express server'
 app.listen(env.port, () => {
 	console.log(`Server running at http://localhost:${env.port}`);
 });
+
+// Steps 2 and 3 'Connect to PostgreSQL', 'Create the tasks table' done via the Setup process in main README
