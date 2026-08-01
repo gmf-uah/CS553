@@ -10,7 +10,7 @@
 		"build": "tsc",
 		"start": "node dist/server.js"
 	},
-	"author": "dschrimpsher",
+	"author": "grant",
 	"license": "UNLICENSED",
 	"devDependencies": {
 		"@types/express": "^5.0.6",
