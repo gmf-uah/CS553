@@ -1,7 +1,7 @@
 import express from "express";
 import type { Application } from "express";
 import type { Pool } from "pg";
-import { pool } from "./db/pool";
+import { pool } from "./services/pool";
 import { env } from "./config/env";
 
 import { validateId } from "./middleware/validator";
