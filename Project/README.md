@@ -1,6 +1,6 @@
 # Task Tracker
 
-- Creating projects for users, and allow users to assign tasks to any project.
+- Create projects for users, and allow users to assign tasks to any project.
 - Track task ownership, progress, and responsibility (which project).
 
 ## First-Time Setup
