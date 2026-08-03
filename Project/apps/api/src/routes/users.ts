@@ -1,8 +1,19 @@
 import { Router } from "express";
 import authenticateToken, { requireRole } from "../middleware/authenticator";
 import { validateId_Middleware } from "../middleware/validator";
+
+const router = Router(); // establish the middleware right up top for readers
+router.use(authenticateToken);
+router.use(requireRole("admin")); // only admins can interact with the `users` routes
+router.param("id", validateId_Middleware);
+
 import { pool } from "../services/pool";
-import { UserService, UserValidationMode, validateUser } from "../services/userService";
+import {
+	USER_INPUT_SCHEMA,
+	UserService,
+	UserValidationMode,
+	validateUser,
+} from "../services/userService";
 import {
 	createDeleteHandler,
 	createGetByIdHandler,
@@ -12,13 +23,7 @@ import {
 	internalServerError,
 } from "../util";
 
-const router = Router();
 const userService = new UserService(pool);
-
-router.use(authenticateToken);
-router.use(requireRole("admin"));
-
-router.param("id", validateId_Middleware);
 
 router.get("/", async (_req, res) => {
 	try {
@@ -31,7 +36,7 @@ router.get("/", async (_req, res) => {
 
 router.post(
 	"/",
-	validateUser(UserValidationMode.CREATE_MINIMUM),
+	validateUser(UserValidationMode.CREATE_MINIMUM, USER_INPUT_SCHEMA),
 	createPostHandler((payload, fields) => userService.createUser(payload, fields), {
 		writeErrorMessage: "Failed to add user",
 	}),

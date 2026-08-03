@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Pool } from "pg";
+import { env } from "../config/env";
 import { UserService } from "./userService";
 
 export interface AuthTokenPayload {
@@ -21,7 +22,7 @@ type UserAuthRecord = PublicUserRecord & {
 	passwordHash: string;
 };
 
-const jwtSecret = process.env.JWT_SECRET ?? "temporary-jwt-secret";
+const jwtSecret = env.jwtSecret;
 
 export class AuthService {
 	private readonly userService: UserService;

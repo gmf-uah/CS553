@@ -17,6 +17,7 @@ export interface UserRecord {
 	createdAt: string;
 }
 
+// json object
 export interface CreateUserFromPasswordInput {
 	name: string;
 	email: string;
@@ -49,6 +50,29 @@ export const USER_SCHEMA = Object.freeze({
 	},
 }) satisfies SchemaDefinition & Record<string, { writable: boolean }>;
 
+export const USER_INPUT_SCHEMA = Object.freeze({
+	name: {
+		dataType: "string",
+		requiredForCreateMinimum: true,
+		writable: true,
+	},
+	email: {
+		dataType: "string",
+		requiredForCreateMinimum: true,
+		writable: true,
+	},
+	password: {
+		dataType: "string",
+		requiredForCreateMinimum: true,
+		writable: true,
+	},
+	role: {
+		dataType: "string",
+		requiredForCreateMinimum: true,
+		writable: true,
+	},
+}) satisfies SchemaDefinition & Record<string, { writable: boolean }>;
+
 const USER_RETURNING_CLAUSE = `id,
     name,
     email,
@@ -61,11 +85,14 @@ const SALT_ROUNDS = 10;
 
 type UserWritableField = keyof typeof USER_SCHEMA;
 
-export function validateUser(validationMode: ValidationMode): RequestHandler {
+export function validateUser(
+	validationMode: ValidationMode,
+	schema: SchemaDefinition & Record<string, { writable: boolean }> = USER_SCHEMA,
+): RequestHandler {
 	return (req, res, next) => {
 		const validFields = collectValidFields(
 			req.body as Record<string, unknown>,
-			USER_SCHEMA,
+			schema,
 			validationMode,
 		);
 
@@ -111,14 +138,42 @@ export class UserService {
 		return result.rows[0] ?? null;
 	}
 
+	async getUserByEmail(email: string): Promise<UserRecord | null> {
+		const result = await this.pool.query<UserRecord>(
+			`SELECT ${USER_RETURNING_CLAUSE}
+			 FROM users
+			 WHERE email = $1`,
+			[email],
+		);
+
+		return result.rows[0] ?? null;
+	}
+
+    // create a user directly from a POST request
 	async createUser(
 		payload: Record<string, unknown>,
 		fields: string[],
 	): Promise<UserRecord> {
 		const insertableFields = this.getWritableFields(fields);
-		return this.createUserFromPayloadAndFields(payload, insertableFields);
+		const normalizedPayload = { ...payload };
+
+		if (fields.includes("password")) {
+			const password = normalizedPayload.password;
+			if (typeof password !== "string") {
+				throw new Error("Password must be a string");
+			}
+
+			normalizedPayload.password_hash = await bcrypt.hash(password, SALT_ROUNDS);
+			delete normalizedPayload.password;
+			if (!insertableFields.includes("password_hash")) {
+				insertableFields.push("password_hash");
+			}
+		}
+
+		return this.createUserFromPayloadAndFields(normalizedPayload, insertableFields);
 	}
 
+    // create a user from /auth/register (through authService)
 	async createUserWithPassword(
 		input: CreateUserFromPasswordInput,
 	): Promise<UserRecord> {
@@ -135,6 +190,41 @@ export class UserService {
 		);
 	}
 
+	// Startup bootstrap uses this to create or promote the configured administrator.
+	async ensureAdminUser(input: {
+		name: string;
+		email: string;
+		password: string;
+	}): Promise<"created" | "promoted" | "unchanged"> {
+		const existing = await this.getUserByEmail(input.email);
+
+		if (!existing) {
+			await this.createUserWithPassword({
+				name: input.name,
+				email: input.email,
+				password: input.password,
+				role: "admin",
+			});
+			return "created";
+		}
+
+		if (existing.role === "admin") {
+			return "unchanged";
+		}
+
+		const updated = await this.updateUser(
+			existing.id,
+			{ role: "admin" },
+			["role"],
+		);
+		if (!updated) {
+			throw new Error("Failed to promote configured admin user");
+		}
+
+		return "promoted";
+	}
+
+    // for the remaining user routes
 	async updateUser(
 		id: number,
 		payload: Record<string, unknown>,
@@ -187,6 +277,7 @@ export class UserService {
 		return result.rowCount === 1;
 	}
 
+    // duplicate of other services' versions. did not finish generalizing
 	private getWritableFields(fields: string[]): UserWritableField[] {
 		return fields.filter(
 			(fieldName): fieldName is UserWritableField =>
@@ -194,6 +285,7 @@ export class UserService {
 		);
 	}
 
+    // the generalized function referenced by the direct POST user route, AND the registration route
 	private async createUserFromPayloadAndFields(
 		payload: Record<string, unknown>,
 		insertableFields: UserWritableField[],

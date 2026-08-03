@@ -20,6 +20,7 @@ export interface TaskRecord {
 	updatedAt: string;
 }
 
+// This captures the minimum joined task/project data needed for ownership checks.
 export interface TaskAuthorizationContext {
 	projectId: number;
 	assignedTo: number | null;
@@ -216,6 +217,7 @@ export class TaskService {
 		return result.rowCount === 1;
 	}
 
+	// Authorization uses the task assignee plus the owning project user in one lookup.
 	async getTaskAuthorizationContext(
 		taskId: number,
 	): Promise<TaskAuthorizationContext | null> {

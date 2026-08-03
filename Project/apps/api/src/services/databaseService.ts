@@ -47,6 +47,7 @@ export class DatabaseService {
 		return { text, values };
 	}
 
+	// Replacements preserve omitted writable fields by resetting them to SQL DEFAULT.
 	public buildReplaceQuery(
 		tableName: string,
 		id: number,
@@ -102,8 +103,7 @@ export class DatabaseService {
 		return result.rows[0] ?? null;
 	}
 
-	// this is what constructs the $(1), $(2) etc. in each query
-	// depends on how many fields were received, and the order
+	// Build the shared "column = $n" fragments used by partial-update style writes.
 	private buildParameterizedAssignments(
 		payload: Record<string, unknown>,
 		fields: string[],

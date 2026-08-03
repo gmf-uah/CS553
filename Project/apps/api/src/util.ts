@@ -26,12 +26,6 @@ export function handleDatabaseWriteError(
                 error: "Invalid foreign key reference. Related record does not exist.",
             });
         }
-
-        if (error.code === "23505") {
-            return res
-                .status(409)
-                .json({ error: "Unique constraint violation on insert or update." });
-        }
     }
 
     return internalServerError(error, fallbackMessage, res);

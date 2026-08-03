@@ -11,6 +11,10 @@ import authRouter from "./routes/auth";
 import projectsRouter from "./routes/projects";
 import tasksRouter from "./routes/tasks";
 import usersRouter from "./routes/users";
+import { bootstrapAdminUser } from "./services/adminBootstrapService";
+
+let theApp: ReturnType<typeof createApp> | null = null;
+let appInitPromise: Promise<ReturnType<typeof createApp>> | null = null;
 
 export function createApp() {
 	const app = express();
@@ -23,12 +27,33 @@ export function createApp() {
 	app.use("/tasks", tasksRouter);
 
 	// Canvas Checkpoint 1 Step 1 'Create the basic Express server'
-	app.listen(env.port, () => {
-		console.log(`Server running at http://localhost:${env.port}`);
-	});
-
 	// Steps 2 and 3 'Connect to PostgreSQL', 'Create the tasks table' done via the Setup process in main README
 	return app;
 }
 
-createApp();
+async function initializeApp(): Promise<ReturnType<typeof createApp>> {
+	if (!theApp) {
+		theApp = createApp();
+	}
+
+	await bootstrapAdminUser();
+	return theApp;
+}
+
+export function getApp() {
+	if (!appInitPromise) {
+		appInitPromise = initializeApp();
+	}
+
+	return appInitPromise;
+}
+
+void getApp()
+	.then((app) => {
+		app.listen(env.port, () => {
+			console.log(`Server running at http://localhost:${env.port}`);
+		});
+	})
+	.catch((error) => {
+		console.error("Failed to initialize app", error);
+	});

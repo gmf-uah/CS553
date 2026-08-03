@@ -2,4 +2,5 @@ node_modules/
 apps/api/dist/
 .env
 .DS_Store
+bash_sample.txt
 !.env.example

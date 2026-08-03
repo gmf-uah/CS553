@@ -1,6 +1,8 @@
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import type { RequestHandler } from "express";
-const jwtSecret = process.env.JWT_SECRET ?? "temporary-jwt-secret";
+import { env } from "../config/env";
+
+const jwtSecret = env.jwtSecret;
 
 export interface AuthenticatedUser {
     userId: number;
