@@ -6,7 +6,7 @@
 
 2. With `Node.js` installed, run `npm install` to ensure all project dependencies are available.
 
-3. Copy `.env.example` to `.env`, then:
+3. Copy `.env.example` to a new file `.env`, then in the new file:
 
     - Update `JWT_SECRET` to a random string of at least 20 characters.
 
@@ -27,12 +27,6 @@
         ```shell
         Get-Content database/schema.sql | docker exec -i cs453-postgres psql -U postgres -d cs453
         ```
-
-## Quick Auth
-
-- An admin account is created automatically on startup from the `ADMIN_NAME`, `ADMIN_EMAIL`, and `ADMIN_PASSWORD` values in `.env`.
-- Register with `POST /auth/register` and log in with `POST /auth/login`; the login response returns a JWT.
-- Send the JWT in requests as `Authorization: Bearer <token>`.
 
 ## Run the Program
 
@@ -66,6 +60,12 @@ If you want to empty the database, run the following commands:
 2. Repeat [Setup Step 5](#first-time-setup)
 
 <!-- markdownlint-enable MD029 -->
+
+## Auth
+
+- An admin account is created automatically on startup from the `ADMIN_NAME`, `ADMIN_EMAIL`, and `ADMIN_PASSWORD` values in `.env`.
+- Register with `POST /auth/register` and log in with `POST /auth/login`; the login response returns a JWT as `token: <token>`.
+- Send the JWT in requests as `Authorization: Bearer <token>`.
 
 ## Routes and Validation
 
