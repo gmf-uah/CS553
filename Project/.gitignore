@@ -4,3 +4,4 @@ apps/api/dist/
 .DS_Store
 bash_sample.txt
 !.env.example
+*.old

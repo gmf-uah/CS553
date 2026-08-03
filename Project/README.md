@@ -1,5 +1,8 @@
 # Task Tracker
 
+- Creating projects for users, and allow users to assign tasks to any project.
+- Track task ownership, progress, and responsibility (which project).
+
 ## First-Time Setup
 
 1. In a terminal, navigate (`cd`) to the project directory. Once there, the current working directory should contain this `README.md` file along with files such as `docker-compose.yml`, `package.json`, and `.gitignore`.
