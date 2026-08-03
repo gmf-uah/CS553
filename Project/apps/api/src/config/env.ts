@@ -7,5 +7,5 @@ export const env = {
 	port: Number(process.env.PORT || 3000),
 	databaseUrl:
 		process.env.DATABASE_URL ||
-		"postgresql://postgres:postgres@localhost:5432/cs453",
+		"postgresql://postgres:postgres@localhost:5433/cs453",
 };

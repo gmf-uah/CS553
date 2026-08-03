@@ -38,3 +38,5 @@ Run the schema file against the local database after PostgreSQL is running:
 ```shell
 psql postgresql://postgres:postgres@localhost:5432/cs453 -f database/schema.sql
 ```
+
+This creates the `users`, `projects`, and `tasks` tables with foreign key relationships.

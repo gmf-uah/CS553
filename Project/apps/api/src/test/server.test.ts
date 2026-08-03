@@ -17,14 +17,19 @@ function taskHasValidSignature(task: any): boolean {
 	);
 }
 
-describe("Lab 3 starter", () => {
-	test("GET /health returns status ok", async () => {
-		const app = createApp();
+describe("Tasks Manager", () => {
+    for (const route of ["health", "db-health"]) {
+        // knock out health and db health tests in 1 loop
+        test(`GET /${route} returns status ok`, async () => {
+            const app = createApp();
 
-		const response = await request(app).get("/health").expect(200);
+            const response = await request(app).get(`/${route}`).expect(200);
 
-		expect(response.body.status).toEqual("ok");
-	});
+            expect(response.body.status).toEqual("ok");
+        });
+    }
+    // TODO: test register, login, and everything else
+    // also new roles (user, admin) and their authorization
 
 	test("POST /tasks creates new task", async () => {
 		const app = createApp();

@@ -6,9 +6,11 @@
 
 2. With `Node.js` installed, run `npm install` to ensure all project dependencies are available.
 
-3. Create the database with `npm run db:start`.
+3. Copy and paste the `.env.example` file, rename it to `.env`, then open the new file and edit the value JWT_SECRET to be a random string of at least 20 characters.
 
-4. Run the following command to create the `tasks` table within the database.
+4. Create the database with `npm run db:start`.
+
+5. Run the following command to create the required database tables (`users`, `projects`, and `tasks`) within the database.
 
     - In `bash`:
 
@@ -24,48 +26,73 @@
 
 ## Run the Program
 
-1. In the main project directory containing this README file, run the API server with `npm run dev`.
+1. In the main project directory containing this README file, run the API server with `npm run start`.
 
-    In a separate terminal, observe that `curl` commands work, e.g. `curl http://localhost:3000/db-health`.
+2. In a separate terminal, observe that `curl` commands work, e.g. `curl http://localhost:3000/db-health`.
 
-2. Browser page does not exist yet. Client interactions can only occur via `curl` for now. ~~To view the browser page, first navigate to the client directory in the new terminal. From the project directory, run `cd apps/client`, enter `npm run client`, then in a browser visit `http://localhost:5173`.~~
+    - Browser page does not exist. Client interactions can only occur via `curl`.
 
 ## Testing
 
 The test script can be run with `npm run test`.
 
-Please ensure you have an empty database before running the test script.
+Please ensure you have completed the [first-time setup](#first-time-setup) before running the test.
+
+Ensure you have an empty database before running the test script.
 
 If you want to empty the database, run the following commands:
 
-1.
+<!-- markdownlint-disable MD029 -->
+<!-- shut up the linter for now -->
 
-```shell
-npm run db:reset; npm run db:start
-```
+1. Run the following commands:
 
-2. Repeat [Setup Step 4](#first-time-setup)
+    ```shell
+    npm run db:reset; npm run db:start
+    ```
+
+2. Repeat [Setup Step 5](#first-time-setup)
+
+<!-- markdownlint-enable MD029 -->
 
 ## Routes and Validation
 
-**ID**: Check if ID is valid and exists in database
+**ID**: `:id` must be a positive integer.
 
-**Schema**: Check if the task schema is valid (has all required fields, type checks pass)
+**Schema**:
+
+- `POST`/`PUT` require each resource's minimum create fields.
+- `PATCH` requires at least one valid updatable field.
+- Wrong types cause the request to be rejected.
+- Extra fields get ignored.
+
+### Routes
 
 | Route | Validation |
 | ----- | ---------- |
 | GET `/health` | N/A |
 | GET `/db-health` | N/A |
+| GET `/users` | N/A |
+| POST `/users` | **Schema** |
+| GET `/users/:id` | **ID** |
+| PUT `/users/:id` | **ID**, **Schema** |
+| PATCH `/users/:id` | **ID**, **Schema** |
+| DELETE `/users/:id` | **ID** |
+| GET `/projects` | N/A |
+| POST `/projects` | **Schema** |
+| GET `/projects/:id` | **ID** |
+| PUT `/projects/:id` | **ID**, **Schema** |
+| PATCH `/projects/:id` | **ID**, **Schema** |
+| DELETE `/projects/:id` | **ID** |
 | GET `/tasks` | N/A |
-| GET `/tasks/:id` | **ID** |
+| GET `/tasks?project_id=1` | Query type check |
 | POST `/tasks` | **Schema** |
+| GET `/tasks/:id` | **ID** |
 | PUT `/tasks/:id` | **ID**, **Schema** |
-| PATCH `/tasks/:id` | **ID**, **Schema** (Partial)* |
+| PATCH `/tasks/:id` | **ID**, **Schema** |
 | DELETE `/tasks/:id` | **ID** |
 
-\* The PATCH route only ensures that at least one of the updatable fields is present, and that there are no invalid fields (type mismatch)
-
-## curl commands for routes, functionality, more notes on validation
+### curl examples
 
 GET `/health`
 
@@ -73,15 +100,85 @@ GET `/health`
 curl http://localhost:3000/health
 ```
 
-- Checks if the server is running.
-
 GET `/db-health`
 
 ```bash
 curl http://localhost:3000/db-health
 ```
 
-- Fails when the database fails. This is true for all routes on this server other than `GET /health`.
+GET `/users`
+
+```bash
+curl http://localhost:3000/users
+```
+
+POST `/users`
+
+```bash
+curl -X POST http://localhost:3000/users -H "Content-Type: application/json" -d '{"name":"Alice","email":"alice@example.com","password_hash":"hash123","role":"student"}'
+```
+
+GET `/users/:id`
+
+```bash
+curl http://localhost:3000/users/1
+```
+
+PUT `/users/:id`
+
+```bash
+curl -X PUT http://localhost:3000/users/1 -H "Content-Type: application/json" -d '{"name":"Alice","email":"alice@example.com","password_hash":"newhash","role":"ta"}'
+```
+
+PATCH `/users/:id`
+
+```bash
+curl -X PATCH http://localhost:3000/users/1 -H "Content-Type: application/json" -d '{"role":"instructor"}'
+```
+
+DELETE `/users/:id`
+
+```bash
+curl -X DELETE http://localhost:3000/users/1
+```
+
+GET `/projects`
+
+```bash
+curl http://localhost:3000/projects
+```
+
+POST `/projects`
+
+```bash
+curl -X POST http://localhost:3000/projects -H "Content-Type: application/json" -d '{"name":"Checkpoint API","description":"Course checkpoint project","owner_id":1}'
+```
+
+- `owner_id` must be an existing user id.
+
+GET `/projects/:id`
+
+```bash
+curl http://localhost:3000/projects/1
+```
+
+PUT `/projects/:id`
+
+```bash
+curl -X PUT http://localhost:3000/projects/1 -H "Content-Type: application/json" -d '{"name":"Checkpoint API","description":"Updated description","owner_id":1}'
+```
+
+PATCH `/projects/:id`
+
+```bash
+curl -X PATCH http://localhost:3000/projects/1 -H "Content-Type: application/json" -d '{"description":"Patched description"}'
+```
+
+DELETE `/projects/:id`
+
+```bash
+curl -X DELETE http://localhost:3000/projects/1
+```
 
 GET `/tasks`
 
@@ -89,70 +186,55 @@ GET `/tasks`
 curl http://localhost:3000/tasks
 ```
 
-- Responds with an array of all tasks on the database.
-
-GET `/tasks/:id`
+GET `/tasks?project_id=1`
 
 ```bash
-curl http://localhost:3000/tasks/4
+curl http://localhost:3000/tasks?project_id=1
 ```
 
-- Responds with the requested task from the database.
-- Fails (404) if the ID is invalid, as with all other routes.
+- `project_id` must be a positive integer query value.
 
 POST `/tasks`
 
 ```bash
-curl -X POST http://localhost:3000/tasks -H "Content-Type: application/json" -d '{"title": "test"}'
+curl -X POST http://localhost:3000/tasks -H "Content-Type: application/json" -d '{"title":"Implement auth","description":"Add login endpoint","status":"todo","project_id":1,"assigned_to":1}'
 ```
 
-- Creates the requested task on the database.
-- Fails (400) if task schema does not match, as with all other request body routes. All fields must be present and have matching types.
+- `project_id` is required.
+- `assigned_to` is optional.
 
-Invalid POST usage:
+POST `/tasks` (unassigned)
 
 ```bash
-curl -X POST http://localhost:3000/tasks -H "Content-Type: application/json" -d '{"description": "hard task"}'
+curl -X POST http://localhost:3000/tasks -H "Content-Type: application/json" -d '{"title":"Write docs","project_id":1}'
 ```
 
-- Not all required fields are present here; the `title` field is missing.
+GET `/tasks/:id`
+
+```bash
+curl http://localhost:3000/tasks/1
+```
 
 PUT `/tasks/:id`
 
 ```bash
-curl -X PUT http://localhost:3000/tasks/4 -H "Content-Type: application/json" -d '{"title":"exam"}'
+curl -X PUT http://localhost:3000/tasks/1 -H "Content-Type: application/json" -d '{"title":"Implement auth","project_id":1}'
 ```
-
-- Replaces the requested task on the database.
-
-Also valid:
-
-```bash
-curl -X PUT http://localhost:3000/tasks/4 -H "Content-Type: application/json" -d '{"title": "exam", "course": "CS 453"}'
-```
-
-- Extraneous fields are ignored; `"course": "CS 453"` does not cause an error nor does it affect the database.
 
 PATCH `/tasks/:id`
 
 ```bash
-curl -X PATCH http://localhost:3000/tasks/4 -H "Content-Type: application/json" -d '{"description": "very hard task"}'
+curl -X PATCH http://localhost:3000/tasks/1 -H "Content-Type: application/json" -d '{"assigned_to":2,"status":"in_progress"}'
 ```
-
-- Updates the requested task with the provided fields. In this case, only the quantity field gets updated.
-
-Invalid PATCH usage:
-
-```bash
-curl -X PATCH http://localhost:3000/tasks/4 -H "Content-Type: application/json" -d '{"description": 13, "title": "quiz"}'
-```
-
-- Fails because `"description"` is not a string. `"title"` is ignored because the request is rejected.
 
 DELETE `/tasks/:id`
 
 ```bash
-curl -X DELETE http://localhost:3000/tasks/4
+curl -X DELETE http://localhost:3000/tasks/1
 ```
 
-- Deletes the task with id 4.
+Relationship notes (current behavior)
+
+- `projects.owner_id` must reference an existing user.
+- `tasks.project_id` must reference an existing project.
+- `tasks.assigned_to` is optional, but if provided it must reference an existing user.

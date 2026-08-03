@@ -1,6 +1,10 @@
-import { Request, Response, NextFunction } from "express";
+import { type RequestHandler } from "express";
 import { Pool } from "pg";
-import { collectValidFields, SchemaDefinition } from "../middleware/validator";
+import {
+	collectValidFields,
+	SchemaDefinition,
+	ValidationMode,
+} from "../middleware/validator";
 import { DatabaseService } from "./databaseService";
 
 export interface TaskRecord {
@@ -10,14 +14,19 @@ export interface TaskRecord {
 	title: string;
 	description: string | null;
 	status: string;
+	projectId: number;
+	assignedTo: number | null;
 	createdAt: string;
 	updatedAt: string;
 }
 
-export enum TaskValidationMode {
-	CREATE_MINIMUM = 1,
-	UPDATE_PARTIAL = 2,
+export interface TaskAuthorizationContext {
+	projectId: number;
+	assignedTo: number | null;
+	projectOwnerId: number;
 }
+
+export const TaskValidationMode = ValidationMode;
 
 export const TASK_SCHEMA = Object.freeze({
 	title: {
@@ -35,6 +44,16 @@ export const TASK_SCHEMA = Object.freeze({
 		requiredForCreateMinimum: false,
 		writable: true,
 	},
+	project_id: {
+		dataType: "number",
+		requiredForCreateMinimum: true,
+		writable: true,
+	},
+	assigned_to: {
+		dataType: "number",
+		requiredForCreateMinimum: false,
+		writable: true,
+	},
 }) satisfies SchemaDefinition & Record<string, { writable: boolean }>;
 // apparently you can do this if you dont know how to write the type declarations before the equal sign
 
@@ -42,6 +61,8 @@ const TASK_RETURNING_CLAUSE = `id,
     title,
     description,
     status,
+	project_id AS "projectId",
+	assigned_to AS "assignedTo",
     created_at AS "createdAt",
     updated_at AS "updatedAt"`;
 
@@ -51,8 +72,8 @@ const TASK_RETURNING_CLAUSE = `id,
 // So those 3 are writable fields (can be sent in the request body and written to the database)
 type TaskWritableField = keyof typeof TASK_SCHEMA;
 
-export function validateTask(validationMode: TaskValidationMode) {
-	return (req: Request, res: Response, next: NextFunction) => {
+export function validateTask(validationMode: ValidationMode): RequestHandler {
+	return (req, res, next) => {
 		const validFields = collectValidFields(
 			req.body as Record<string, unknown>,
 			TASK_SCHEMA,
@@ -64,7 +85,7 @@ export function validateTask(validationMode: TaskValidationMode) {
 
 		if (!validFields) {
 			const errorMessage = // didnt feel like doing the whole "return success: bool, error: Error | null" idiom
-				validationMode === TaskValidationMode.CREATE_MINIMUM
+				validationMode === ValidationMode.CREATE_MINIMUM
 					? "Invalid task schema. Required fields must be present and all provided fields must have correct data types"
 					: "At least one update field must be provided and all update fields must have correct data types";
 
@@ -85,17 +106,28 @@ export class TaskService {
 
 	// all async functions return promises
 	// upon success, the value returned by the promise is an array of taskRecords
-	async getAllTasks(): Promise<TaskRecord[]> {
-		const result = await this.pool.query<TaskRecord>(
-			`SELECT ${TASK_RETURNING_CLAUSE}
+    // also, we enable getting all the tasks associated with a project id
+	async getAllTasks(projectId?: number): Promise<TaskRecord[]> {
+		const queryText =
+			typeof projectId === "number"
+				? `SELECT ${TASK_RETURNING_CLAUSE}
              FROM tasks
-             ORDER BY id`,
-		);
+             WHERE project_id = $1
+             ORDER BY id`
+				: `SELECT ${TASK_RETURNING_CLAUSE}
+             FROM tasks
+             ORDER BY id`;
+
+		const result =
+			typeof projectId === "number"
+				? await this.pool.query<TaskRecord>(queryText, [projectId])
+				: await this.pool.query<TaskRecord>(queryText);
 
 		return result.rows;
 	}
 
 	async getTaskById(id: number): Promise<TaskRecord | null> {
+        // console.log(`task id: ${id}`)
 		const result = await this.pool.query<TaskRecord>(
 			`SELECT ${TASK_RETURNING_CLAUSE}
              FROM tasks
@@ -182,6 +214,22 @@ export class TaskService {
 			[id],
 		);
 		return result.rowCount === 1;
+	}
+
+	async getTaskAuthorizationContext(
+		taskId: number,
+	): Promise<TaskAuthorizationContext | null> {
+		const result = await this.pool.query<TaskAuthorizationContext>(
+			`SELECT t.project_id AS "projectId",
+				t.assigned_to AS "assignedTo",
+				p.owner_id AS "projectOwnerId"
+			 FROM tasks t
+			 JOIN projects p ON p.id = t.project_id
+			 WHERE t.id = $1`,
+			[taskId],
+		);
+
+		return result.rows[0] ?? null;
 	}
 
 	// dont include id in the writable fields
