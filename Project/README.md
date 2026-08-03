@@ -152,11 +152,15 @@ POST `/auth/register`
 curl -X POST http://localhost:3000/auth/register -H "Content-Type: application/json" -d '{"name":"Alice","email":"alice@example.com","password":"pass123"}'
 ```
 
+After you register, successfully logging in will print your token to the console. Use this token for all remaining curl examples.
+
 POST `/auth/login`
 
 ```bash
 curl -X POST http://localhost:3000/auth/login -H "Content-Type: application/json" -d '{"email":"alice@example.com","password":"pass123"}'
 ```
+
+The token should get printed if you complete the above command.
 
 Example protected request with a token
 
