@@ -36,6 +36,11 @@ export class AuthService {
 		email: string;
 		password: string;
 	}): Promise<PublicUserRecord> {
+		const existingUser = await this.userService.getUserByEmail(input.email);
+		if (existingUser) {
+			throw new Error("Email already exists.");
+		}
+
 		const user = await this.userService.createUserWithPassword({
 			name: input.name,
 			email: input.email,

@@ -30,6 +30,10 @@ router.post("/register", async (req, res) => {
 
 		res.status(201).json(user); // user has been created
 	} catch (error) {
+		if (error instanceof Error && error.message === "Email already exists.") {
+			return res.status(409).json({ error: "Email already exists." });
+		}
+
 		handleDatabaseWriteError(error, res, "Failed to register user");
 	}
 });

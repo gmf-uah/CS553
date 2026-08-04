@@ -220,6 +220,19 @@ describe("Tasks Manager", () => {
 		expect("passwordHash" in response.body).toBe(false);
 	});
 
+	test("POST /auth/register rejects duplicate emails (409)", async () => {
+		const response = await request(app)
+			.post("/auth/register")
+			.send({
+				name: "Duplicate Bob",
+				email: bobEmail,
+				password: bobPassword,
+			})
+			.expect(409);
+
+		expect(response.body.error).toContain("already exists");
+	});
+
 	test("POST /auth/login rejects missing email or password (400)", async () => {
 		const response = await request(app)
 			.post("/auth/login")
