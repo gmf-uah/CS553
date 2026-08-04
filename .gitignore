@@ -7,10 +7,10 @@ dist/
 build/
 coverage/
 
-# Compiled TypeScript
-*.js
-*.js.map
-*.d.ts
+# # Compiled TypeScript
+# *.js
+# *.js.map
+# *.d.ts
 
 # TypeScript cache
 *.tsbuildinfo
