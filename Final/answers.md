@@ -208,4 +208,6 @@ Describe one operation that should be completed directly in an HTTP request and 
 
 ## 3. Lessons Learned
 
+Identify three practices from this course that you would recommend. At least two must relate to topics from the second half of the course.
+
 **TODO**
