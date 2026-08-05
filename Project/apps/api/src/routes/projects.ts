@@ -70,8 +70,7 @@ const requireProjectOwnershipOrAdmin: RequestHandler = (_req, res, next) => {
 	}
 
 	return res.status(403).json({
-		error: "Forbidden",
-		message: "You can only modify projects you own.",
+		error: "You can only modify projects you own."
 	});
 };
 
@@ -88,8 +87,7 @@ const prepareProjectCreatePayload: RequestHandler = (req, res, next) => {
 	if (user.role !== "admin") {
 		if (fields.includes("owner_id") && payload.owner_id !== user.userId) {
 			return res.status(403).json({
-				error: "Forbidden",
-				message: "Normal users can only create projects they own.",
+				error: "Normal users can only create projects they own."
 			});
 		}
 
@@ -118,8 +116,7 @@ const requireAdminToChangeProjectOwner: RequestHandler = (_req, res, next) => {
 	const fields = res.locals.validFields as string[];
 	if (user.role !== "admin" && fields.includes("owner_id")) {
 		return res.status(403).json({
-			error: "Forbidden",
-			message: "Only admins can change project ownership.",
+			error: "Only admins can change project ownership."
 		});
 	}
 
