@@ -7,15 +7,9 @@ import {
 
 export const tasksRouter = Router();
 
-function part3NotImplemented(req, res, next) {
-    return res.status(501).json({
-        error: "Part 3 middleware has not been implemented."
-    });
-}
-
 tasksRouter.get("/",
     authenticateToken,
-    requireRole,
+    requireRole("student", "instructor"),
     (req, res) => {
         res.json({
             userId: req.user.sub,
@@ -26,7 +20,7 @@ tasksRouter.get("/",
 
 tasksRouter.get('/:id',
     authenticateToken,
-    requireRole,
+    requireRole("student", "instructor"),
     // TODO(PART 4): Add the required authentication and authorization middleware.
     async (req, res, next) => {
         // TODO(PART 4): Query req.params.id with parameterized SQL using db.query(sql, parameters).
@@ -38,9 +32,8 @@ tasksRouter.get('/:id',
 
 tasksRouter.delete(
     "/:id",
-    // TODO(PART 3): Replace part3NotImplemented with authentication
-    // and instructor-only authorization middleware.
-    part3NotImplemented,
+    authenticateToken,
+    requireRole("instructor"),
     async (req, res, next) => {
         try {
             const result = await db.run(
