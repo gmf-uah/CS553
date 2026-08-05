@@ -128,11 +128,20 @@ Describe how the API should use OAuth, JWTs, and PKI when handling a request.
 
 ## 3. Database and Asynchronous Report Processing
 
+`POST /reports`
+
+- **JSON body**
+```
+TODO
+```
+
+`GET /reports/{id}`
+
 **TODO**
 
 # Part 3 Authentication and Authorization Implementation
 
-**Sections 1-3 present in source code.**
+✅ **Sections 1-3 present in source code.**
 
 ## 4. Error Classification
 
@@ -145,7 +154,7 @@ Describe how the API should use OAuth, JWTs, and PKI when handling a request.
 
 # Part 4 Database Integration and Async/Await
 
-**Section 1 present in source code.**
+✅ **Section 1 present in source code.**
 
 ## 2. Database and Asynchronous Behavior
 
@@ -161,11 +170,19 @@ Why must the route use `await` when calling `db.query()`?
 
 ## 1. Submit a Report Job
 
+**TODO**
+
 ## 2. Process a Report Message
+
+**TODO**
 
 ## 3. Queue Behavior
 
+**The API returns 202 Accepted because it indicates the server is going to finish the work associated with the request without forcing the client to wait for that work to finish before responding. It indicates asynchronous behavior.**
+
 # Part 6 OpenAPI Specification
+
+✅
 
 # Part 7 Reflection
 
