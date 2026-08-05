@@ -80,7 +80,11 @@ Explain the purpose of OAuth.
 
 Explain how a digital certificate helps a client establish a secure connection to an API server.
 
-**TODO**
+**Digital certificates are used by servers for clients to be able to trust that the server they are sending a request to is the real one expected to be associated with that address. A certificate authority (CA) is an entity, usually an organization, that is agreed upon by most server hosters (especially the most-used ones) to be a trustworthy party. Those CAs are the ones that grant digital certificates that let clients know a server is the one they are indeed the one they intend to visit.**
+
+**Such certificates are encrypted with public keys owned by the server, and signed with private keys owned by the CA. The client then cross references that public key with the certificate's public key, confirming the CA granted the digital certificate to the server.**
+
+**If there was no certificate validation, then the client could visit a website they thought was `google.com`, with that exact address, but it's the wrong server, spoofing that address. The user might then try to log in and submit their actual `google.com` password credentials, thus giving the fake server access to their account.**
 
 ## 6. Databases, Messages, and Asynchronous Processing
 
@@ -88,9 +92,15 @@ An API receives a request to generate a large report. Producing the report may t
 
 Explain why the API should normally use asynchronous processing instead of keeping the HTTP request open.
 
-**TODO**
+**If the HTTP request is kept open while producing the report, then the server will be unreachable during the entire production time. Any pages clients attempt to visit will not load until the report is produced and returned to the requesting user.**
+
+**A reasonable API design for a server-side task might take a significant amount of time to complete is one that is executed asynchronously. Such a task is delegated to a background worker, which could either work on its own CPU core or in a different thread. When a client submits a request that gets delegated this way, the server returns a 202 status code ("Accepted") which indicates the process is ongoing. To return a response to the client when the job finishes, the client 'subscribes' to the server so that when it 'publishes' a message saying the job finished, the client will receive the data it asked for initially.**
+
+**If multiple jobs are scheduled, having them all occur asynchronously could crowd out server resources. A threshold for 'maximum jobs running at one time', when met, causes the server to place further jobs into a message queue, to begin only once the current jobs have completed.**
 
 # Part 2
+
+## 1. Authentication and Authorization
 
 | Request | Decision and Status Code |
 | ------- | ------------------------ |
@@ -99,6 +109,26 @@ Explain why the API should normally use asynchronous processing instead of keepi
 | A student requests one of their own tasks | Accept, 200 |
 | A student requests another student’s task | Reject, 403 |
 | An instructor requests a task belonging to any student | Accept, 200 |
+
+**Authentication ends when the user sends a valid JWT.**
+
+**From there, it's about contextual permissions based on what the developer wants a user to be able to do based on their role.**
+
+## 2. OAuth, JWT, and PKI Design
+
+Describe how the API should use OAuth, JWTs, and PKI when handling a request.
+
+**When sending a request to interact with a task or progress report (view/update), the user's browser (or CLI, if using curl) uses UAH's access token granted when the user logged in through the portal and confirmed via Duo Mobile.**
+
+**The client sends the access token to the API through a header, much like how it sends a JWT.**
+
+**The API must validate the token signature before trusting the JWT, as if the payload doesn't match the signature the server initially signed it with, then it has been tampered with. If the server didn't verify this, then the API would blindly trust whatever info was sent in the payload, including supplied roles like `Admin`. Blindly trusting the client to tell the server its role could cause database leaks or deletion.**
+
+**HTTPS protects against man-in-the-middle attacks where sensitive information is sniffed by an attacker from within vulnerable middleware or intercepting packets at the router level. The server's certificate allows the client to trust that the server they are communicating with is the correct one associated with that address rather than an impostor.**
+
+## 3. Database and Asynchronous Report Processing
+
+**TODO**
 
 # Part 3
 
