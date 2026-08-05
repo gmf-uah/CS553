@@ -34,14 +34,12 @@ export function authenticateToken(req, res, next) {
 
 export function requireRole(...allowedRoles) {
     return (req, res, next) => {
-        const user = req.user;
-
-        if (!user) {
+        if (!req.user) {
             // console.log("user not provided")
             return res.status(401).json({ error: "Authentication required" });
         }
 
-        if (allowedRoles.includes(user.role)) {
+        if (allowedRoles.includes(req.user.role)) {
             next()
         } else {
             return res.status(403).json({
@@ -51,5 +49,6 @@ export function requireRole(...allowedRoles) {
     };
 }
 
+// ???
 void jwt;
 void config;

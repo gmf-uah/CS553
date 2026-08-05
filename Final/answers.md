@@ -132,7 +132,7 @@ Describe how the API should use OAuth, JWTs, and PKI when handling a request.
 
 # Part 3 Authentication and Authorization Implementation
 
-**Parts 1-3 present in source code.**
+**Sections 1-3 present in source code.**
 
 ## 4. Error Classification
 
@@ -145,9 +145,17 @@ Describe how the API should use OAuth, JWTs, and PKI when handling a request.
 
 # Part 4 Database Integration and Async/Await
 
-## 1. Retrieve a Task
+**Section 1 present in source code.**
 
 ## 2. Database and Asynchronous Behavior
+
+Why should the task ID be supplied as a query parameter instead of being inserted directly into the SQL string?
+
+- **SQL injection is an insecurity caused by an attacker placing SQL commands into a request payload in the hope that the server inserts it to the database query, allowing them arbitrary access to the database to do things like retrieving unauthorized data or deleting data. When the task ID is supplied as a query parameter to the database query, the ID isn't considered as part of the query instruction but rather as data, so no SQL injection can occur.**
+
+Why must the route use `await` when calling `db.query()`?
+
+- **`db.query` is an asynchronous function, meaning it returns a `Promise` immediately rather than waiting until the database has finished its query to return the result of the function call. `await` just goes ahead and waits for that result, which comes through the completed `Promise`.**
 
 # Part 5 Message Queues and Background Processing
 
