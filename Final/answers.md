@@ -1,6 +1,6 @@
 **My answers are written in bold.**
 
-# Part 1
+# Part 1 Conceptual Foundations
 
 ## 1. Authentication vs. Authorization
 
@@ -98,7 +98,7 @@ Explain why the API should normally use asynchronous processing instead of keepi
 
 **If multiple jobs are scheduled, having them all occur asynchronously could crowd out server resources. A threshold for 'maximum jobs running at one time', when met, causes the server to place further jobs into a message queue, to begin only once the current jobs have completed.**
 
-# Part 2
+# Part 2 Secure API Design
 
 ## 1. Authentication and Authorization
 
@@ -130,7 +130,7 @@ Describe how the API should use OAuth, JWTs, and PKI when handling a request.
 
 **TODO**
 
-# Part 3
+# Part 3 Authentication and Authorization Implementation
 
 # Part 4
 
