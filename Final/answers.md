@@ -92,6 +92,14 @@ Explain why the API should normally use asynchronous processing instead of keepi
 
 # Part 2
 
+| Request | Decision and Status Code |
+| ------- | ------------------------ |
+| A request contains no access token | Reject, 401 |
+| A request contains an expired JWT | Reject, 401 |
+| A student requests one of their own tasks | Accept, 200 |
+| A student requests another student’s task | Reject, 403 |
+| An instructor requests a task belonging to any student | Accept, 200 |
+
 # Part 3
 
 # Part 4
