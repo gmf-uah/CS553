@@ -1,0 +1,358 @@
+openapi: 3.1.0
+
+info:
+  title: Course Task Tracker API
+  version: 1.0.0
+  description: REST API for managing course tasks and generating asynchronous reports
+
+servers:
+  - url: https://api.example.com
+
+security:
+  - bearerAuth: []
+
+paths:
+  /tasks:
+    get:
+      summary: List all tasks
+      operationId: listTasks
+      responses:
+        "200":
+          description: A list of tasks
+          content:
+            application/json:
+              schema:
+                type: array # array as a type is weird because its not a primitive
+                items:
+                  $ref: "#/components/schemas/Task"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+    post:
+      summary: Create new task
+      operationId: createTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskInput"
+      responses:
+        "201":
+          description: Task created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /tasks/{id}:
+    parameters:
+      - $ref: "#/components/parameters/ResourceId"
+
+    get:
+      summary: Get task by ID
+      operationId: getTaskById
+      responses:
+        "200":
+          description: The requested task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    put:
+      summary: Replace task
+      operationId: replaceTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskInput"
+      responses:
+        "200":
+          description: Task replaced successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    patch:
+      summary: Partially update task
+      operationId: updateTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskPatch"
+      responses:
+        "200":
+          description: Task updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      summary: Delete task
+      operationId: deleteTask
+      responses:
+        "204":
+          description: Task deleted successfully
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /reports:
+    post:
+      summary: Request new report
+      operationId: createReport
+      description: Enqueues an asynchronous report generation job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportRequest"
+      responses:
+        "202":
+          description: Report generation accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Report"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /reports/{id}:
+    parameters:
+      - $ref: "#/components/parameters/ResourceId"
+
+    get:
+      summary: Get report by ID
+      operationId: getReportById
+      responses:
+        "200":
+          description: The requested report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Report"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    ResourceId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique identifier of the resource
+
+  schemas:
+    Task:
+      type: object
+      required:
+        - id
+        - title
+        - course
+        - studentId
+        - completed
+      properties:
+        id:
+          type: string
+          description: Unique task identifier
+          examples:
+            - "42"
+        title:
+          type: string
+          description: Short title of the task
+          examples:
+            - "Watch Week 6 lecture"
+        course:
+          type: string
+          description: Course identifier the task belongs to
+          examples:
+            - "CS453"
+        studentId:
+          type: string
+          description: ID of the student the task is assigned to
+          examples:
+            - "djs001"
+        completed:
+          type: boolean
+          description: Whether the task has been completed
+
+    TaskInput:
+      type: object
+      required:
+        - title
+        - course
+        - studentId
+        - completed
+      properties:
+        title:
+          type: string
+          description: Short title of the task
+        course:
+          type: string
+          description: Course identifier the task belongs to
+        studentId:
+          type: string
+          description: ID of the student the task is assigned to
+        completed:
+          type: boolean
+          description: Whether the task has been completed
+
+    TaskPatch:
+      type: object
+      minProperties: 1
+      properties:
+        title:
+          type: string
+        course:
+          type: string
+        studentId:
+          type: string
+        completed:
+          type: boolean
+
+    ReportRequest:
+      type: object
+      required:
+        - studentId
+      properties:
+        studentId:
+          type: string
+          description: ID of the student the report is for
+
+    Report:
+      type: object
+      required:
+        - id
+        - studentId
+        - status
+        - downloadUrl
+      properties:
+        id:
+          type: string
+          description: Unique report identifier
+        studentId:
+          type: string
+          description: ID of the student the report belongs to
+        status:
+          type: string
+          enum:
+            - pending
+            - processing
+            - complete
+            - failed
+          description: Current processing status
+        downloadUrl:
+          type: string
+          format: uri
+          description: URL to download the completed report
+
+    Error:
+      type: object
+      required:
+        - status
+        - message
+      properties:
+        status:
+          type: integer
+          description: HTTP status code
+        message:
+          type: string
+          description: Human-readable error message
+
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: 400
+            message: "Validation failed"
+
+    Unauthorized:
+      description: Unauthorized (JWT bearer token invalid)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: 401
+            message: "Authorization token is missing or invalid"
+
+    Forbidden:
+      description: Forbidden (lacking permissions)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: 403
+            message: "Insufficient permissions"
+
+    NotFound:
+      description: Not Found — no resource with the given ID exists
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: 404
+            message: "Resource not found"
