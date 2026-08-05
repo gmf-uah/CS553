@@ -132,10 +132,37 @@ Describe how the API should use OAuth, JWTs, and PKI when handling a request.
 
 # Part 3 Authentication and Authorization Implementation
 
-# Part 4
+**Parts 1-3 present in source code.**
 
-# Part 5
+## 4. Error Classification
 
-# Part 6
+| Situation | Status Code |
+| --------- | ----------- |
+| No access token was provided | `401 Unauthorized` |
+| The JWT has expired | `401 Unauthorized` |
+| The JWT signature is invalid | `401 Unauthorized` |
+| A validly authenticated student attempts an instructor-only operation | `403 Forbidden` |
 
-# Part 7
+# Part 4 Database Integration and Async/Await
+
+## 1. Retrieve a Task
+
+## 2. Database and Asynchronous Behavior
+
+# Part 5 Message Queues and Background Processing
+
+## 1. Submit a Report Job
+
+## 2. Process a Report Message
+
+## 3. Queue Behavior
+
+# Part 6 OpenAPI Specification
+
+# Part 7 Reflection
+
+## 1. Following a Request Through the System
+
+## 2. Synchronous vs. Asynchronous Processing
+
+## 3. Lessons Learned
