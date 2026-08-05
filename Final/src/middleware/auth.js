@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import { config } from '../config.js';
 
 // The imports above are supplied so students can use jwt and config.jwtSecret.
+// console.log(2)
 export function authenticateToken(req, res, next) {
     const authorization = req.get("authorization");
 
@@ -13,14 +14,16 @@ export function authenticateToken(req, res, next) {
     const token = authorization.slice("Bearer ".length);
 
     try {
-        const payload = jwt.verify(token, jwtSecret); // does the token have the jwt signature?
-        const user = toAuthenticatedUser(payload);
+        // console.log(2.1)
+        const user = jwt.verify(token, config.jwtSecret); // does the token have the jwt signature?
+        // console.log(2.2, user)
 
         if (!user) {
             res.status(401).json({ error: "Invalid authentication token payload" });
             return;
         }
 
+        // console.log(2.5);
         req.user = user;
         // i dont like using req.user, as res.locals is the intended place for storage by the server
         next();
@@ -34,6 +37,7 @@ export function requireRole(...allowedRoles) {
         const user = req.user;
 
         if (!user) {
+            // console.log("user not provided")
             return res.status(401).json({ error: "Authentication required" });
         }
 

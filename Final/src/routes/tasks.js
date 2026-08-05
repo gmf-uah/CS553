@@ -1,9 +1,11 @@
 import { Router } from 'express';
 import { db } from '../database.js';
+console.log(1)
 import {
     authenticateToken,
     requireRole
 } from "../middleware/auth.js";
+import { notFound } from '../middleware/errorHandler.js';
 
 export const tasksRouter = Router();
 
@@ -21,13 +23,32 @@ tasksRouter.get("/",
 tasksRouter.get('/:id',
     authenticateToken,
     requireRole("student", "instructor"),
-    // TODO(PART 4): Add the required authentication and authorization middleware.
     async (req, res, next) => {
-        // TODO(PART 4): Query req.params.id with parameterized SQL using db.query(sql, parameters).
-        // TODO(PART 4): Return 404 when no task exists, allow instructors, and check student ownership.
-        // TODO(PART 4): Return 403 for another student's task; return the task on success.
-        // req.params.id, req.user.sub, req.user.role, db.query(), and next(error) are available here.
-        return res.status(501).json({ error: 'Task-by-ID is not implemented yet.' });
+        try {
+            // console.log(4, req.user)
+            const result = await db.query( // student_id AS studentId is the aliaser
+                "SELECT id, title, course, student_id AS studentId, completed FROM tasks WHERE id = ?",
+                [req.params.id]
+            );
+
+            const task = result.rows[0];
+
+            // console.log(5, task)
+            if (!task) {
+                return notFound(req, res);
+            }
+
+            // shame it takes a whole database query to determine 403
+            if (req.user.role === "student" && task.studentId !== req.user.sub) {
+                return res.status(403).json({ error: "Forbidden" });
+            }
+
+            // pdf says explicitly return 200, but it's not really necessary
+            // also `...task` is a nice way to put `task` in the response with the modified `task.completed`
+            return res.status(200).json({ ...task, completed: Boolean(task.completed) });
+        } catch (error) {
+            return next(error);
+        }
     });
 
 tasksRouter.delete(

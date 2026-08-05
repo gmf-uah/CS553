@@ -4,11 +4,12 @@ import { reportsRouter } from './routes/reports.js';
 import { tasksRouter } from './routes/tasks.js';
 
 export function createApp() {
-  const app = express();
-  app.use(express.json());
-  app.use('/tasks', tasksRouter);
-  app.use('/reports', reportsRouter);
-  app.use(notFound);
-  app.use(errorHandler);
-  return app;
+    const app = express();
+    app.use(express.json());
+    console.log(0)
+    app.use('/tasks', tasksRouter);
+    app.use('/reports', reportsRouter);
+    app.use(notFound);
+    app.use(errorHandler);
+    return app;
 }
