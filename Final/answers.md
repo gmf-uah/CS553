@@ -188,6 +188,24 @@ Why must the route use `await` when calling `db.query()`?
 
 ## 1. Following a Request Through the System
 
+Choose one protected API operation and trace it from the client’s request to the server’s response. Identify one place where the request could fail and explain how the API should respond.
+
+**When a client wants to retrieve one of their tasks through the `GET /tasks/:id` route, they make an HTTP request - a TCP message following a particular format that also expects a response message. Express, a JavaScript framework, is built around organizing HTTP requests like `/tasks/:id` into function calls with request and response objects that give the developer easy access to features of HTTP.**
+
+**Once the server receives the HTTP request, it first verifies that the client is the user that they say they are by authenticating that the token in the request header has a payload matching the user's token at their login time. From there, a database call is made by the server to fetch the task the user wants, but the server only returns that task to the user if the task's owner is also the user; otherwise, the request fails authorization, returning status code 403 Forbidden.**
+
 ## 2. Synchronous vs. Asynchronous Processing
 
+Describe one operation that should be completed directly in an HTTP request and one operation that would be better handled using a message queue and background worker.
+
+**Operations that doesn't require database calls or significant computations are ones that can be performed synchronously without fear of causing the server to hang on a request that depends on such an operation. For example, a `GET /health` check has no need to ever be defined asynchronously; the client is receiving what amounts to a ping response from the server.**
+
+**An asynchronous operation is one that the developer anticipates taking long enough that it's unreasonable to expect a user to wait for the operation to complete before initiating other requests. An example of an  operation best handled asynchronously is SymboLab's integral solver, which can often take upwards of 30 seconds to produce a result. Without asynchronous execution, those 30 seconds of stalling would cause the site to effectively freeze for all users.**
+
+**If an asynchronous task fails, the client's subscription to the topic receives a publish event from the server saying as much. How the client responds to the failure is contextual, but likely a status bar or notification would indicate so.**
+
+**A database could be used as a single source of truth to determine if a previously scheduled operation has been completed. For example, if a client submitted a request for a report to be generated (as per this repo's example), and requested an update after 30 minutes of waiting, then the server would need to consult a central database that is regularly updated with operational progress. Without that central database, every server instance's memory could have a different operational progession report, so that database is important.**
+
 ## 3. Lessons Learned
+
+**TODO**
