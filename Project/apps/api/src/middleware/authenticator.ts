@@ -96,8 +96,7 @@ export function requireRole(...roles: string[]): RequestHandler {
             next()
         } else {
             return res.status(403).json({
-                error: "Forbidden",
-                message: `This action requires one of these roles: ${roles.join(", ")}.`
+                error: `This action requires one of these roles: ${roles.join(", ")}.`,
             });
         }
     };
