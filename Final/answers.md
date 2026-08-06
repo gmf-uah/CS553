@@ -216,4 +216,8 @@ Describe one operation that should be completed directly in an HTTP request and 
 
 Identify three practices from this course that you would recommend. At least two must relate to topics from the second half of the course.
 
-**TODO**
+**1. Service-oriented architecture. If you shove everything into one big file, it will be hard to keep track of which systems depend on other systems. Keeping things in separate files tends to enact and encourage looser coupling.**
+
+**2. If I've learned anything this semester, it's that trying to do authentication and authorization yourself is difficult because it's easy to get wrong. Using OAuth relegates most of the difficulties associated with executing both of these concepts to third parties like Google. If I made a website with user accounts, I'm not even having my own sign-in system present for fear I'll mess it up.**
+
+**3. Database integration. CS 553 has taught me to use SQL, among other things. Avoiding SQL injection is ridiculously simple, and the hardest part of using a database is setting it up, fiddling with Docker etc.**
