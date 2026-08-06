@@ -151,6 +151,8 @@ Design the report-generation portion of the API.
 
 **`GET /reports/{id}` with the job UUID as a path parameter. The handler calls `db.getReportJob(id)` and returns the current record as JSON with HTTP status code `200`. If no record exists for that ID, the server returns status code `404`. Because status is persisted in the database, any server instance can answer, and the client can check progress without keeping a connection open.**
 
+**Because there is no publish/subscribe model present in the codebase, the client isn't notified when the report finishes being generated. It is up to the client to submit a `GET /reports/:id` HTTP request to see if the report is done, and only then is it revealed whether it succeeded or failed, both with a 200 status code. The `status` field and the presence or absence of a `downloadUrl` field is how the client determines success.**
+
 # Part 3 Authentication and Authorization Implementation
 
 ✅ **Sections 1-3 present in source code**
