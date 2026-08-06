@@ -130,7 +130,9 @@ Describe how the API should use OAuth, JWTs, and PKI when handling a request.
 
 Design the report-generation portion of the API.
 
-**Both GET and POST routes require authentication**
+**Both GET and POST routes require authentication.**
+
+**Because there is no publish/subscribe model present in the codebase, the client isn't notified when the report finishes being generated. It is up to the client to submit a `GET /reports/:id` HTTP request to see if the report is done, and only then is it revealed whether it succeeded or failed, both with a 200 status code. The `status` field and the presence or absence of a `downloadUrl` field is how the client determines success.**
 
 ### `POST /reports`
 
@@ -145,13 +147,20 @@ Design the report-generation portion of the API.
 }
 ```
 
-**`POST /reports` is executed with no request body. The `express` handler generates a UUID for `id`, reads `studentId` from `req.user.sub`, writes a `pending` record to the `report_jobs` table via `db.createReportJob()`, then enqueues `{ jobId, studentId }` on `reportQueue`. It immediately returns `202 Accepted` with the job object and a `statusUrl` pointing to `GET /reports/{id}` without ever calling `generateReport()` itself. The client is then expected to get the report themselves with that `GET` route.**
+**This route is executed with no request body. The `express` handler generates a UUID for `id`, reads `studentId` from `req.user.sub`, writes a `pending` record to the `report_jobs` table via `db.createReportJob()`, then enqueues the message as follows on `reportQueue`:**
 
-`GET /reports/{id}`
+```json
+{
+    "jobId": <jobId>,
+    "studentId": <studentId>
+}
+```
 
-**`GET /reports/{id}` with the job UUID as a path parameter. The handler calls `db.getReportJob(id)` and returns the current record as JSON with HTTP status code `200`. If no record exists for that ID, the server returns status code `404`. Because status is persisted in the database, any server instance can answer, and the client can check progress without keeping a connection open.**
+**It immediately returns `202 Accepted` with the job object and a `statusUrl` pointing to `GET /reports/{id}` without ever calling `generateReport()` itself. The client is then expected to get the report themselves with that `GET` route.**
 
-**Because there is no publish/subscribe model present in the codebase, the client isn't notified when the report finishes being generated. It is up to the client to submit a `GET /reports/:id` HTTP request to see if the report is done, and only then is it revealed whether it succeeded or failed, both with a 200 status code. The `status` field and the presence or absence of a `downloadUrl` field is how the client determines success.**
+### `GET /reports/{id}`
+
+**The job UUID is a path parameter in this route. The handler calls `db.getReportJob(id)` and returns the current record as JSON with HTTP status code `200`. If no record exists for that ID, the server returns status code `404`. Because status is persisted in the database, any server instance can answer, and the client can check progress without keeping a connection open.**
 
 # Part 3 Authentication and Authorization Implementation
 
