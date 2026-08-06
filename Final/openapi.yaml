@@ -9,7 +9,7 @@ servers:
   - url: https://api.example.com
 
 security:
-  - bearerAuth: []
+  - bearerAuth: [] # apply to all 8 operations
 
 paths:
   /tasks:

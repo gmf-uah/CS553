@@ -8,13 +8,14 @@ export const reportsRouter = Router();
 
 reportsRouter.post('/', authenticateToken, async (req, res, next) => {
     try {
-        // TODO(PART 5): Create a pending report job with db.createReportJob().
-        // TODO(PART 5): Send { jobId, studentId } to reportQueue.
-        // TODO(PART 5): Return 202 with jobId, status, and statusUrl.
-        // TODO(PART 5): Do not call generateReport() from this request handler.
-        const jobId = randomUUID();
+        const jobId = randomUUID(); // could also use an incrementing ID but nah
         const studentId = req.user.sub;
-        return res.status(501).json({ error: 'Report submission is not implemented yet.' });
+        // create the report job that the reportqueue will fill using the jobId as reference
+        await db.createReportJob({ id: jobId, studentId, status: 'pending', downloadUrl: null });
+        await reportQueue.send({ jobId, studentId });
+        // let the client do the work of getting the report
+        // (we dont have publish/subscribe in this codebase)
+        return res.status(202).json({ jobId, status: 'pending', statusUrl: `/reports/${jobId}` });
     } catch (error) {
         return next(error);
     }

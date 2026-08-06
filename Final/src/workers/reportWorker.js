@@ -3,14 +3,16 @@ import { generateReport } from '../reportGenerator.js';
 import { reportQueue } from '../reportQueue.js';
 
 reportQueue.process(async (message) => {
-  const { jobId, studentId } = message;
+    const { jobId, studentId } = message;
 
-  // TODO(PART 5): Mark this job as "processing" with db.updateReportJob().
-  // TODO(PART 5): Call generateReport(studentId).
-  // TODO(PART 5): Mark it "completed" and save the downloadUrl.
-  // TODO(PART 5): Catch generation errors, mark the job "failed", and do not crash the worker.
-  void jobId;
-  void studentId;
-  void db;
-  void generateReport;
+    // ensure the report doesn't start generating until after we have marked its status
+    await db.updateReportJob(jobId, { status: 'processing' });
+    try {
+        // this is the part that will take a while
+        const downloadUrl = await generateReport(studentId);
+        // once finished, change status and provide the download url
+        await db.updateReportJob(jobId, { status: 'completed', downloadUrl });
+    } catch (error) {
+        await db.updateReportJob(jobId, { status: 'failed' });
+    }
 });

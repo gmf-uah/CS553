@@ -128,20 +128,32 @@ Describe how the API should use OAuth, JWTs, and PKI when handling a request.
 
 ## 3. Database and Asynchronous Report Processing
 
-`POST /reports`
+Design the report-generation portion of the API.
 
-- **JSON body**
+**Both GET and POST routes require authentication**
+
+### `POST /reports`
+
+**JSON body for a report job is given earlier in the final PDF:**
+
+```json
+{
+    "id": "report-17",
+    "studentId": "djs001",
+    "status": "pending",
+    "downloadUrl": null
+}
 ```
-TODO
-```
+
+**`POST /reports` is executed with no request body. The `express` handler generates a UUID for `id`, reads `studentId` from `req.user.sub`, writes a `pending` record to the `report_jobs` table via `db.createReportJob()`, then enqueues `{ jobId, studentId }` on `reportQueue`. It immediately returns `202 Accepted` with the job object and a `statusUrl` pointing to `GET /reports/{id}` without ever calling `generateReport()` itself. The client is then expected to get the report themselves with that `GET` route.**
 
 `GET /reports/{id}`
 
-**TODO**
+**`GET /reports/{id}` with the job UUID as a path parameter. The handler calls `db.getReportJob(id)` and returns the current record as JSON with HTTP status code `200`. If no record exists for that ID, the server returns status code `404`. Because status is persisted in the database, any server instance can answer, and the client can check progress without keeping a connection open.**
 
 # Part 3 Authentication and Authorization Implementation
 
-✅ **Sections 1-3 present in source code.**
+✅ **Sections 1-3 present in source code**
 
 ## 4. Error Classification
 
@@ -154,7 +166,7 @@ TODO
 
 # Part 4 Database Integration and Async/Await
 
-✅ **Section 1 present in source code.**
+✅ **Section 1 present in source code**
 
 ## 2. Database and Asynchronous Behavior
 
@@ -168,13 +180,7 @@ Why must the route use `await` when calling `db.query()`?
 
 # Part 5 Message Queues and Background Processing
 
-## 1. Submit a Report Job
-
-**TODO**
-
-## 2. Process a Report Message
-
-**TODO**
+✅ **Sections 1-2 present in source code**
 
 ## 3. Queue Behavior
 

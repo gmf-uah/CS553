@@ -6,7 +6,7 @@ import { tasksRouter } from './routes/tasks.js';
 export function createApp() {
     const app = express();
     app.use(express.json());
-    console.log(0)
+    // console.log(0)
     app.use('/tasks', tasksRouter);
     app.use('/reports', reportsRouter);
     app.use(notFound);

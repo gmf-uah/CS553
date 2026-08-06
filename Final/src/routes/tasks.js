@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { db } from '../database.js';
-console.log(1)
+// console.log(1)
 import {
     authenticateToken,
     requireRole
